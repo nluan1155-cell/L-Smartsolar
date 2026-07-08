@@ -162,6 +162,12 @@
         .form-group textarea { height: 100px; resize: none; }
         .btn-submit { background: var(--dark); color: white; border: none; width: 100%; padding: 16px; border-radius: 6px; font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: background 0.3s; }
         .btn-submit:hover { background: #1e293b; }
+        .btn-submit:disabled { background: var(--gray); cursor: not-allowed; }
+
+        /* Form Status Messages */
+        #form-result { margin-top: 15px; padding: 12px; border-radius: 6px; font-weight: 600; text-align: center; display: none; }
+        #form-result.success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        #form-result.error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 
         /* FOOTER */
         footer { background: var(--dark); color: #94a3b8; padding: 40px 0; border-top: 4px solid var(--secondary); text-align: center; font-size: 0.95rem; }
@@ -349,7 +355,7 @@
                     <div class="feature-lists">
                         <h4>Thi công chuyên nghiệp cho:</h4>
                         <div class="grid-2col" style="margin-bottom: 15px;">
-                            <div class="check-item"><i class="fas fa-shield-alt"></i> Gia định, nhà ở</div>
+                            <div class="check-item"><i class="fas fa-shield-alt"></i> Gia đình, nhà ở</div>
                             <div class="check-item"><i class="fas fa-shield-alt"></i> Cửa hàng / Shop</div>
                             <div class="check-item"><i class="fas fa-shield-alt"></i> Nhà xưởng / Kho hàng</div>
                             <div class="check-item"><i class="fas fa-shield-alt"></i> Công ty văn phòng</div>
@@ -563,7 +569,11 @@
                 </div>
 
                 <div class="quote-form-panel">
-                    <form action="#" method="POST">
+                    <form id="contact-form">
+                        <input type="hidden" name="access_key" value="99dffc23-31ed-4159-8857-422ed14ecace">
+                        <input type="hidden" name="subject" value="Yêu cầu tư vấn báo giá mới từ L-Smart Solar">
+                        <input type="checkbox" name="botcheck" class="hidden" style="display: none;">
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="fullname">Họ và tên *</label>
@@ -577,18 +587,20 @@
                         <div class="form-group">
                             <label for="service-select">Dịch vụ bạn quan tâm</label>
                             <select id="service-select" name="service">
-                                <option value="solar">Điện năng lượng mặt trời</option>
-                                <option value="smarthome">Nhà thông minh (Smart Home)</option>
-                                <option value="camera">Camera an ninh giám sát</option>
-                                <option value="firealarm">Hệ thống báo cháy tự động</option>
-                                <option value="all">Tích hợp giải pháp trọn gói toàn diện</option>
+                                <option value="Điện năng lượng mặt trời">Điện năng lượng mặt trời</option>
+                                <option value="Nhà thông minh (Smart Home)">Nhà thông minh (Smart Home)</option>
+                                <option value="Camera an ninh giám sát">Camera an ninh giám sát</option>
+                                <option value="Hệ thống báo cháy tự động">Hệ thống báo cháy tự động</option>
+                                <option value="Tích hợp giải pháp trọn gói toàn diện">Tích hợp giải pháp trọn gói toàn diện</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="message">Yêu cầu cụ thể hoặc địa chỉ</label>
                             <textarea id="message" name="message" placeholder="Ví dụ: Tư vấn hệ điện mặt trời 5kW cho hộ gia đình tại Đồng Nai..."></textarea>
                         </div>
-                        <button type="submit" class="btn-submit">GỬI YÊU CẦU KHẢO SÁT CHUYÊN VIÊN</button>
+                        <button type="submit" id="submit-btn" class="btn-submit">GỬI YÊU CẦU KHẢO SÁT CHUYÊN VIÊN</button>
+                        
+                        <div id="form-result"></div>
                     </form>
                 </div>
             </div>
@@ -618,10 +630,63 @@
             navMenu.classList.toggle('active');
         });
 
-        // Tự động đóng menu sau khi click vào một liên kết
         document.querySelectorAll('.nav-menu a').forEach(link => {
             link.addEventListener('click', () => {
                 navMenu.classList.remove('active');
+            });
+        });
+
+        /* ĐOẠN CODE XỬ LÝ GỬI FORM QUA WEB3FORMS (AJAX KHÔNG LOAD LẠI TRANG) */
+        const form = document.getElementById('contact-form');
+        const result = document.getElementById('form-result');
+        const submitBtn = document.getElementById('submit-btn');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Trạng thái đang gửi, khóa nút lại tránh bấm liên tục
+            submitBtn.disabled = true;
+            submitBtn.innerText = "ĐANG GỬI YÊU CẦU...";
+            result.style.display = "block";
+            result.className = ""; 
+            result.innerText = "Vui lòng đợi trong giây lát...";
+
+            const formData = new FormData(form);
+            const object = Object.fromEntries(formData);
+            const json = JSON.stringify(object);
+
+            fetch('https://api.web3forms.com/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: json
+            })
+            .then(async (response) => {
+                let res = await response.json();
+                if (response.status == 200) {
+                    result.className = "success";
+                    result.innerText = "Gửi thông tin thành công! L-Smart Solar sẽ liên hệ sớm nhất với bạn.";
+                    form.reset(); // Xóa sạch dữ liệu ô nhập sau khi gửi thành công
+                } else {
+                    console.log(response);
+                    result.className = "error";
+                    result.innerText = res.message || "Có lỗi xảy ra, vui lòng thử lại.";
+                }
+            })
+            .catch(error => {
+                console.log(error);
+                result.className = "error";
+                result.innerText = "Mất kết nối mạng. Vui lòng kiểm tra lại đường truyền!";
+            })
+            .then(function() {
+                // Trả lại trạng thái nút bấm ban đầu
+                submitBtn.disabled = false;
+                submitBtn.innerText = "GỬI YÊU CẦU KHẢO SÁT CHUYÊN VIÊN";
+                setTimeout(() => {
+                    result.style.display = "none";
+                }, 6000); // Ẩn thông báo trạng thái sau 6 giây
             });
         });
     </script>
