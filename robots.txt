@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Đường dẫn đến file sitemap bạn vừa tạo
+Sitemap: https://lsmartsolar.vn/sitemap.xml
