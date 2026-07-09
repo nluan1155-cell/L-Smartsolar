@@ -697,19 +697,3 @@ git add .
 git commit -m "Them file sitemap"
 git push origin main
 <url>   <loc>https://lsmartsolar.vn/</loc>   <lastmod>2026-07-09T04:44:43+00:00</lastmod> </url>
-User-agent: *
-Allow: /
-Sitemap: https://lsmartsolar.vn/sitemap.xml
-# 1. Tạo file robots.txt bằng lệnh
-echo "User-agent: *" > robots.txt
-echo "Allow: /" >> robots.txt
-echo "Sitemap: https://lsmartsolar.vn/sitemap.xml" >> robots.txt
-
-# 2. Thêm file vào danh sách cần đẩy lên
-git add robots.txt
-
-# 3. Ghi chú cho lần cập nhật này
-git commit -m "Them file robots.txt de toi uu SEO"
-
-# 4. Đẩy code lên Netlify
-git push origin main
